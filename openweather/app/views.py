@@ -9,7 +9,7 @@ from .models import Weather
 class WeatherOverviewView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         lat = request.GET.get("lat")
         lon = request.GET.get("lon")
 
@@ -45,7 +45,7 @@ class WeatherOverviewView(APIView):
         )
 
         return Response({
-            "id": weather_entry.id,  # Devuelve el ID del registro guardado
+            "id": weather_entry.id, 
             "location_name": location_name,
             "lat": lat,
             "lon": lon,
@@ -55,7 +55,7 @@ class WeatherOverviewView(APIView):
             "pressure": pressure,
         })
     
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         data = request.data
 
         if not data.get("lat") or not data.get("lon"):
@@ -82,7 +82,7 @@ class WeatherOverviewView(APIView):
             "pressure": weather_entry.pressure,
         }, status=status.HTTP_201_CREATED)
     
-    def put(self, request, *args, **kwargs):
+    def put(self, request, **kwargs):
         weather_id = kwargs.get("weather_id")
         data = request.data
 
@@ -111,3 +111,13 @@ class WeatherOverviewView(APIView):
             "humidity": weather_entry.humidity,
             "pressure": weather_entry.pressure,
         })
+    
+    def delete(self, **kwargs):
+        weather_id = kwargs.get("weather_id") 
+
+        try:
+            weather_entry = Weather.objects.get(id=weather_id)
+            weather_entry.delete()
+            return Response({"message": "Weather entry deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except Weather.DoesNotExist:
+            return Response({"error": "Weather entry not found"}, status=status.HTTP_404_NOT_FOUND)
